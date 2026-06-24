@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 interface SafeImageProps {
@@ -38,16 +39,16 @@ export default function SafeImage({
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      fill={fill}
+      width={!fill ? width : undefined}
+      height={!fill ? height : undefined}
       className={className}
-      style={
-        fill
-          ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }
-          : { width, height, objectFit: "cover" }
-      }
-      loading={priority ? "eager" : "lazy"}
+      priority={priority}
+      sizes={sizes}
+      unoptimized={true}
       onError={() => setError(true)}
     />
   );
