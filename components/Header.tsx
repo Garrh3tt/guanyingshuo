@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +28,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="text-2xl">🎬</span>
+          <Image src="/images/favicon.svg" alt="观影说" width={32} height={32} className="rounded-full" />
           <span className="text-xl font-bold text-white">
             观影<span className="text-brand-red">说</span>
           </span>
@@ -101,6 +105,31 @@ export default function Header() {
                 />
               </svg>
             </button>
+          )}
+
+          {/* 用户菜单 */}
+          {session ? (
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-brand-red to-brand-gold rounded-full flex items-center justify-center text-sm font-bold text-white">
+                  {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+                <span className="hidden md:inline text-sm">{session.user?.name}</span>
+              </button>
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-40 bg-brand-card border border-gray-700 rounded-lg shadow-xl py-2">
+                  <Link href="/profile" onClick={() => setIsUserMenuOpen(false)} className="block px-4 py-2 text-gray-300 hover:bg-brand-red/10 hover:text-white transition-colors">个人中心</Link>
+                  <button onClick={() => { signOut({ callbackUrl: "/" }); setIsUserMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-brand-red/10 hover:text-white transition-colors">退出登录</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/auth/login" className="bg-brand-red hover:bg-red-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">
+              登录
+            </Link>
           )}
 
           {/* 移动端菜单按钮 */}

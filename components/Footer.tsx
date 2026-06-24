@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
           {/* 网站简介 */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">🎬</span>
+              <Image src="/images/favicon.svg" alt="观影说" width={28} height={28} className="rounded-full" />
               <span className="text-xl font-bold text-white">
                 观影<span className="text-brand-red">说</span>
               </span>
