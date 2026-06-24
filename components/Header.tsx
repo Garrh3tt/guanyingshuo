@@ -1,0 +1,177 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setIsSearchOpen(false);
+    }
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-brand-darker/95 backdrop-blur-sm border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <span className="text-2xl">🎬</span>
+          <span className="text-xl font-bold text-white">
+            观影<span className="text-brand-red">说</span>
+          </span>
+        </Link>
+
+        {/* 桌面端导航 */}
+        <nav className="hidden md:flex items-center gap-8">
+          <Link
+            href="/"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            首页
+          </Link>
+          <Link
+            href="/movie"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            电影
+          </Link>
+          <Link
+            href="/ranking"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            排行榜
+          </Link>
+          <Link
+            href="/about"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            关于我们
+          </Link>
+        </nav>
+
+        {/* 搜索和菜单按钮 */}
+        <div className="flex items-center gap-4">
+          {/* 搜索框 */}
+          {isSearchOpen ? (
+            <form onSubmit={handleSearch} className="flex items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索电影..."
+                className="bg-brand-card text-white px-3 py-1.5 rounded-l-lg border border-gray-600 focus:border-brand-red focus:outline-none text-sm w-40 md:w-56"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="bg-brand-red text-white px-3 py-1.5 rounded-r-lg hover:bg-red-700 transition-colors"
+              >
+                搜索
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                className="ml-2 text-gray-400 hover:text-white md:hidden"
+              >
+                ✕
+              </button>
+            </form>
+          ) : (
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* 移动端菜单按钮 */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-gray-300 hover:text-white"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* 移动端导航菜单 */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-brand-darker border-t border-gray-800">
+          <nav className="flex flex-col px-4 py-4 gap-4">
+            <Link
+              href="/"
+              className="text-gray-300 hover:text-white transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              首页
+            </Link>
+            <Link
+              href="/movie"
+              className="text-gray-300 hover:text-white transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              电影
+            </Link>
+            <Link
+              href="/ranking"
+              className="text-gray-300 hover:text-white transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              排行榜
+            </Link>
+            <Link
+              href="/about"
+              className="text-gray-300 hover:text-white transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              关于我们
+            </Link>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}

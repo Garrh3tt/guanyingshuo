@@ -30,6 +30,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+.vercel-tmp/
+
+# npm cache artifact
+%USERPROFILE%/
 
 # typescript
 *.tsbuildinfo

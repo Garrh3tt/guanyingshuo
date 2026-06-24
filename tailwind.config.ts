@@ -11,6 +11,21 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        brand: {
+          red: "#E50914",
+          gold: "#F5C518",
+          dark: "#0F0F0F",
+          darker: "#080808",
+          card: "#1A1A1A",
+          muted: "#8B8B8B",
+        },
+        tomato: {
+          fresh: "#FA320A",
+          rotten: "#6B7280",
+        },
+      },
+      fontFamily: {
+        sans: ['"Noto Sans SC"', "system-ui", "sans-serif"],
       },
     },
   },
