@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { watchlistDB } from "@/lib/watchlist";
+import { db } from "@/lib/db";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -9,13 +10,12 @@ export async function GET() {
     return NextResponse.json({ error: "未登录" }, { status: 401 });
   }
 
-  const { db } = await import("@/lib/db");
-  const user = db.findUserByEmail(session.user.email);
+  const user = await db.findUserByEmail(session.user.email);
   if (!user) {
     return NextResponse.json({ error: "用户不存在" }, { status: 404 });
   }
 
-  const watchlist = watchlistDB.getUserWatchlist(user.id);
+  const watchlist = await watchlistDB.getUserWatchlist(user.id);
   return NextResponse.json({ watchlist });
 }
 
@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "未登录" }, { status: 401 });
   }
 
-  const { db } = await import("@/lib/db");
-  const user = db.findUserByEmail(session.user.email);
+  const user = await db.findUserByEmail(session.user.email);
   if (!user) {
     return NextResponse.json({ error: "用户不存在" }, { status: 404 });
   }
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "参数缺失" }, { status: 400 });
   }
 
-  const item = watchlistDB.addToWatchlist(user.id, movieId, title, posterPath);
+  const item = await watchlistDB.addToWatchlist(user.id, movieId, title, posterPath);
   return NextResponse.json({ item, message: "已添加到想看" });
 }
 
@@ -48,8 +47,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "未登录" }, { status: 401 });
   }
 
-  const { db } = await import("@/lib/db");
-  const user = db.findUserByEmail(session.user.email);
+  const user = await db.findUserByEmail(session.user.email);
   if (!user) {
     return NextResponse.json({ error: "用户不存在" }, { status: 404 });
   }
@@ -61,6 +59,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "参数缺失" }, { status: 400 });
   }
 
-  const removed = watchlistDB.removeFromWatchlist(user.id, Number(movieId));
+  const removed = await watchlistDB.removeFromWatchlist(user.id, Number(movieId));
   return NextResponse.json({ removed, message: removed ? "已移除" : "未找到" });
 }

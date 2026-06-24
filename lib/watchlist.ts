@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { readData, writeData } from "@/lib/storage";
 
 export interface WatchlistItem {
   id: string;
@@ -10,27 +9,14 @@ export interface WatchlistItem {
   createdAt: string;
 }
 
-const DB_PATH = path.join(process.cwd(), "data", "watchlist.json");
+const WATCHLIST_KEY = "watchlist.json";
 
-function readWatchlist(): WatchlistItem[] {
-  try {
-    if (!fs.existsSync(DB_PATH)) {
-      fs.writeFileSync(DB_PATH, "[]", "utf-8");
-      return [];
-    }
-    const data = fs.readFileSync(DB_PATH, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+async function readWatchlist(): Promise<WatchlistItem[]> {
+  return (await readData<WatchlistItem[]>(WATCHLIST_KEY)) || [];
 }
 
-function writeWatchlist(items: WatchlistItem[]) {
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(DB_PATH, JSON.stringify(items, null, 2), "utf-8");
+async function writeWatchlist(items: WatchlistItem[]) {
+  await writeData(WATCHLIST_KEY, items);
 }
 
 function generateId() {
@@ -38,8 +24,9 @@ function generateId() {
 }
 
 export const watchlistDB = {
-  getUserWatchlist(userId: string): WatchlistItem[] {
-    return readWatchlist()
+  async getUserWatchlist(userId: string): Promise<WatchlistItem[]> {
+    const items = await readWatchlist();
+    return items
       .filter((item) => item.userId === userId)
       .sort(
         (a, b) =>
@@ -47,19 +34,20 @@ export const watchlistDB = {
       );
   },
 
-  isInWatchlist(userId: string, movieId: number): boolean {
-    return readWatchlist().some(
+  async isInWatchlist(userId: string, movieId: number): Promise<boolean> {
+    const items = await readWatchlist();
+    return items.some(
       (item) => item.userId === userId && item.movieId === movieId
     );
   },
 
-  addToWatchlist(
+  async addToWatchlist(
     userId: string,
     movieId: number,
     title: string,
     posterPath: string | null
-  ): WatchlistItem {
-    const items = readWatchlist();
+  ): Promise<WatchlistItem> {
+    const items = await readWatchlist();
     const existing = items.find(
       (item) => item.userId === userId && item.movieId === movieId
     );
@@ -74,17 +62,20 @@ export const watchlistDB = {
       createdAt: new Date().toISOString(),
     };
     items.push(newItem);
-    writeWatchlist(items);
+    await writeWatchlist(items);
     return newItem;
   },
 
-  removeFromWatchlist(userId: string, movieId: number): boolean {
-    const items = readWatchlist();
+  async removeFromWatchlist(
+    userId: string,
+    movieId: number
+  ): Promise<boolean> {
+    const items = await readWatchlist();
     const filtered = items.filter(
       (item) => !(item.userId === userId && item.movieId === movieId)
     );
     if (filtered.length === items.length) return false;
-    writeWatchlist(filtered);
+    await writeWatchlist(filtered);
     return true;
   },
 };

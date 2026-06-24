@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = db.findUserByEmail(credentials.email as string)
+        const user = await db.findUserByEmail(credentials.email as string)
 
         if (!user) {
           return null

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { watchlistDB } from "@/lib/watchlist";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -9,8 +10,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ inWatchlist: false });
   }
 
-  const { db } = await import("@/lib/db");
-  const user = db.findUserByEmail(session.user.email);
+  const user = await db.findUserByEmail(session.user.email);
   if (!user) {
     return NextResponse.json({ inWatchlist: false });
   }
@@ -21,6 +21,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ inWatchlist: false });
   }
 
-  const inWatchlist = watchlistDB.isInWatchlist(user.id, Number(movieId));
+  const inWatchlist = await watchlistDB.isInWatchlist(user.id, Number(movieId));
   return NextResponse.json({ inWatchlist });
 }

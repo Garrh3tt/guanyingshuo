@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     }
 
     // 检查用户是否已存在
-    const existingUser = db.findUserByEmail(email)
+    const existingUser = await db.findUserByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // 创建用户
-    const user = db.createUser(name, email, hashedPassword)
+    const user = await db.createUser(name, email, hashedPassword)
 
     return NextResponse.json(
       { message: "注册成功", userId: user.id },
