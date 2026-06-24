@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { db } from "@/lib/db"
 import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
@@ -14,9 +14,7 @@ export async function POST(req: Request) {
     }
 
     // 检查用户是否已存在
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
+    const existingUser = db.findUserByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,13 +27,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // 创建用户
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    })
+    const user = db.createUser(name, email, hashedPassword)
 
     return NextResponse.json(
       { message: "注册成功", userId: user.id },

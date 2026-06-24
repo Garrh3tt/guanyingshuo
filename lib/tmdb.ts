@@ -98,3 +98,15 @@ export async function discoverMovies(
 export async function getGenres(): Promise<{ genres: Genre[] }> {
   return fetchTMDB<{ genres: Genre[] }>("/genre/movie/list");
 }
+
+// 按类型发现电影
+export async function getMoviesByGenre(
+  genreId: number,
+  page = "1"
+): Promise<TMDBResponse<Movie>> {
+  return fetchTMDB<TMDBResponse<Movie>>("/discover/movie", {
+    with_genres: String(genreId),
+    sort_by: "popularity.desc",
+    page,
+  });
+}
