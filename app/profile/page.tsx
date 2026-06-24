@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useEffect } from "react"
+import Breadcrumb from "@/components/Breadcrumb"
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -30,6 +31,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-brand-dark py-10">
       <div className="max-w-4xl mx-auto px-4">
+        <Breadcrumb items={[{ label: "个人中心" }]} />
         {/* 用户信息卡片 */}
         <div className="bg-brand-card rounded-xl p-8 mb-8">
           <div className="flex items-center gap-6">
@@ -70,8 +72,8 @@ export default function ProfilePage() {
             <div className="text-center py-8 text-gray-500">
               <p className="text-4xl mb-2">❤️</p>
               <p>暂无收藏</p>
-              <Link href="/ranking" className="text-brand-red hover:text-red-400 mt-2 inline-block">
-                浏览排行榜 →
+              <Link href="/watchlist" className="text-brand-red hover:text-red-400 mt-2 inline-block">
+                去看收藏列表 →
               </Link>
             </div>
           </div>

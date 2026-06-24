@@ -18,6 +18,7 @@ import TomatoScore from "@/components/TomatoScore";
 import MovieCard from "@/components/MovieCard";
 import ReviewSection from "@/components/ReviewSection";
 import WatchlistButton from "@/components/WatchlistButton";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export const dynamic = "force-dynamic";
 
@@ -167,6 +168,13 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
 
       {/* 详情区域 */}
       <div className="max-w-7xl mx-auto px-4 py-10 space-y-10">
+        {/* 面包屑导航 */}
+        <Breadcrumb
+          items={[
+            { label: "电影", href: "/movie" },
+            { label: movie.title },
+          ]}
+        />
         {/* 剧情简介 */}
         <section>
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
