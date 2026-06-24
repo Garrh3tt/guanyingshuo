@@ -22,30 +22,22 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">快速链接</h3>
             <nav className="flex flex-col gap-2">
-              <Link
-                href="/"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                首页
-              </Link>
-              <Link
-                href="/movie"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                电影库
-              </Link>
-              <Link
-                href="/ranking"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                排行榜
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                关于我们
-              </Link>
+              <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">首页</Link>
+              <Link href="/movie" className="text-gray-400 hover:text-white text-sm transition-colors">电影库</Link>
+              <Link href="/ranking" className="text-gray-400 hover:text-white text-sm transition-colors">排行榜</Link>
+              <Link href="/ranking/yearly" className="text-gray-400 hover:text-white text-sm transition-colors">年度榜单</Link>
+            </nav>
+          </div>
+
+          {/* 帮助中心 */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">帮助中心</h3>
+            <nav className="flex flex-col gap-2">
+              <Link href="/help" className="text-gray-400 hover:text-white text-sm transition-colors">帮助中心</Link>
+              <Link href="/faq" className="text-gray-400 hover:text-white text-sm transition-colors">常见问题</Link>
+              <Link href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">联系我们</Link>
+              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">隐私政策</Link>
+              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">服务条款</Link>
             </nav>
           </div>
 
