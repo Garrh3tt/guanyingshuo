@@ -1,41 +1,50 @@
-import { put, del, list, head } from "@vercel/blob";
+import { createClient, type EdgeConfigClient } from "@vercel/edge-config";
 
-// 使用内存缓存减少Blob读取次数
+// 内存缓存减少Edge Config读取次数
 const memoryCache: Record<string, { data: unknown; timestamp: number }> = {};
-const CACHE_TTL = 30000; // 30秒缓存
+const CACHE_TTL = 15000; // 15秒缓存
 
-function getCacheKey(key: string): string {
-  return `guanyingshuo-${key}`;
+let edgeConfigClient: EdgeConfigClient | null = null;
+
+function getEdgeConfigClient(): EdgeConfigClient | null {
+  if (edgeConfigClient) return edgeConfigClient;
+
+  const edgeConfigUrl = process.env.EDGE_CONFIG;
+  if (edgeConfigUrl) {
+    try {
+      edgeConfigClient = createClient(edgeConfigUrl);
+      return edgeConfigClient;
+    } catch (e) {
+      console.error("Failed to create Edge Config client:", e);
+    }
+  }
+  return null;
 }
 
-function isVercelBlobAvailable(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
+function isEdgeConfigAvailable(): boolean {
+  return !!process.env.EDGE_CONFIG;
 }
 
 export async function readData<T>(key: string): Promise<T | null> {
-  const cacheKey = getCacheKey(key);
-
   // 1. 检查内存缓存
-  const cached = memoryCache[cacheKey];
+  const cached = memoryCache[key];
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data as T;
   }
 
-  // 2. 尝试从 Vercel Blob 读取
-  if (isVercelBlobAvailable()) {
+  // 2. 尝试从 Edge Config 读取
+  if (isEdgeConfigAvailable()) {
     try {
-      const blobInfo = await head(cacheKey);
-      if (blobInfo) {
-        const response = await fetch(blobInfo.url);
-        if (response.ok) {
-          const data = await response.json();
-          memoryCache[cacheKey] = { data, timestamp: Date.now() };
+      const client = getEdgeConfigClient();
+      if (client) {
+        const data = await client.get(key);
+        if (data !== undefined) {
+          memoryCache[key] = { data, timestamp: Date.now() };
           return data as T;
         }
       }
     } catch (e) {
-      // Blob不存在或读取失败，继续尝试其他方式
-      console.warn(`Blob read failed for ${key}:`, e);
+      console.warn(`Edge Config read failed for ${key}:`, e);
     }
   }
 
@@ -43,51 +52,97 @@ export async function readData<T>(key: string): Promise<T | null> {
 }
 
 export async function writeData(key: string, data: unknown): Promise<void> {
-  const cacheKey = getCacheKey(key);
-
   // 1. 更新内存缓存
-  memoryCache[cacheKey] = { data, timestamp: Date.now() };
+  memoryCache[key] = { data, timestamp: Date.now() };
 
-  // 2. 写入 Vercel Blob
-  if (isVercelBlobAvailable()) {
+  // 2. 写入 Edge Config (通过 Vercel API)
+  if (isEdgeConfigAvailable()) {
     try {
-      const jsonString = JSON.stringify(data);
-      await put(cacheKey, jsonString, {
-        access: "public",
-        contentType: "application/json",
-        allowOverwrite: true,
-      });
-      return;
+      const edgeConfigUrl = process.env.EDGE_CONFIG;
+      if (edgeConfigUrl) {
+        const url = new URL(edgeConfigUrl);
+        const token = url.searchParams.get("token");
+        const id = url.pathname.split("/").pop();
+
+        if (token && id) {
+          const apiUrl = `https://api.vercel.com/v1/edge-config/${id}/items`;
+          const response = await fetch(apiUrl, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              items: [{ operation: "upsert", key, value: data }],
+            }),
+          });
+
+          if (response.ok) {
+            return;
+          } else {
+            const errorText = await response.text();
+            console.warn(`Edge Config API error: ${response.status} ${errorText}`);
+          }
+        }
+      }
     } catch (e) {
-      console.error(`Blob write failed for ${key}:`, e);
+      console.error(`Edge Config write failed for ${key}:`, e);
     }
   }
 
-  throw new Error("No storage backend available. Please set BLOB_READ_WRITE_TOKEN.");
+  // 如果没有可用的存储后端，抛出错误
+  throw new Error(
+    "No storage backend available. Please set EDGE_CONFIG environment variable."
+  );
 }
 
 export async function deleteData(key: string): Promise<void> {
-  const cacheKey = getCacheKey(key);
-  delete memoryCache[cacheKey];
+  delete memoryCache[key];
 
-  if (isVercelBlobAvailable()) {
+  if (isEdgeConfigAvailable()) {
     try {
-      await del(cacheKey);
+      const edgeConfigUrl = process.env.EDGE_CONFIG;
+      if (edgeConfigUrl) {
+        const url = new URL(edgeConfigUrl);
+        const token = url.searchParams.get("token");
+        const id = url.pathname.split("/").pop();
+
+        if (token && id) {
+          const apiUrl = `https://api.vercel.com/v1/edge-config/${id}/items`;
+          const response = await fetch(apiUrl, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              items: [{ operation: "delete", key }],
+            }),
+          });
+
+          if (!response.ok) {
+            console.warn(`Edge Config delete failed: ${response.status}`);
+          }
+        }
+      }
     } catch (e) {
-      console.warn(`Blob delete failed for ${key}:`, e);
+      console.warn(`Edge Config delete failed for ${key}:`, e);
     }
   }
 }
 
 // 列出所有存储的键（用于调试）
 export async function listKeys(): Promise<string[]> {
-  if (isVercelBlobAvailable()) {
+  if (isEdgeConfigAvailable()) {
     try {
-      const { blobs } = await list({ prefix: "guanyingshuo-" });
-      return blobs.map((b) => b.pathname.replace("guanyingshuo-", ""));
+      const client = getEdgeConfigClient();
+      if (client) {
+        const allData = await client.getAll();
+        return Object.keys(allData || {});
+      }
     } catch (e) {
-      console.warn("Blob list failed:", e);
+      console.warn("Edge Config list failed:", e);
     }
   }
-  return Object.keys(memoryCache).map((k) => k.replace("guanyingshuo-", ""));
+  return Object.keys(memoryCache);
 }
