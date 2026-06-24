@@ -16,6 +16,7 @@ import {
 } from "@/lib/utils";
 import TomatoScore from "@/components/TomatoScore";
 import MovieCard from "@/components/MovieCard";
+import ReviewSection from "@/components/ReviewSection";
 
 export const dynamic = "force-dynamic";
 
@@ -290,6 +291,9 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
             </div>
           </section>
         )}
+
+        {/* 用户评论 */}
+        <ReviewSection movieId={movie.id} />
 
         {/* 相似推荐 */}
         {similar.results.length > 0 && (
