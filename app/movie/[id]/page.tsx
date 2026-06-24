@@ -17,6 +17,7 @@ import {
 import TomatoScore from "@/components/TomatoScore";
 import MovieCard from "@/components/MovieCard";
 import ReviewSection from "@/components/ReviewSection";
+import WatchlistButton from "@/components/WatchlistButton";
 
 export const dynamic = "force-dynamic";
 
@@ -151,6 +152,13 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
                     &ldquo;{movie.tagline}&rdquo;
                   </p>
                 )}
+
+                {/* 收藏按钮 */}
+                <WatchlistButton
+                  movieId={movie.id}
+                  title={movie.title}
+                  posterPath={movie.poster_path}
+                />
               </div>
             </div>
           </div>

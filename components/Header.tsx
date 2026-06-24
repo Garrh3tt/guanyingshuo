@@ -122,6 +122,7 @@ export default function Header() {
               {isUserMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-40 bg-brand-card border border-gray-700 rounded-lg shadow-xl py-2">
                   <Link href="/profile" onClick={() => setIsUserMenuOpen(false)} className="block px-4 py-2 text-gray-300 hover:bg-brand-red/10 hover:text-white transition-colors">个人中心</Link>
+                  <Link href="/watchlist" onClick={() => setIsUserMenuOpen(false)} className="block px-4 py-2 text-gray-300 hover:bg-brand-red/10 hover:text-white transition-colors">我的想看</Link>
                   <button onClick={() => { signOut({ callbackUrl: "/" }); setIsUserMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-brand-red/10 hover:text-white transition-colors">退出登录</button>
                 </div>
               )}
