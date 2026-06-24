@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 interface SafeImageProps {
@@ -22,7 +21,6 @@ export default function SafeImage({
   height,
   className = "",
   priority,
-  sizes,
 }: SafeImageProps) {
   const [error, setError] = useState(false);
 
@@ -38,17 +36,17 @@ export default function SafeImage({
     );
   }
 
+  // 使用原生 img 标签绕过 Vercel Image Optimization
+  // eslint-disable-next-line @next/next/no-img-element
   return (
-    <Image
+    <img
       src={src}
       alt={alt}
-      fill={fill}
       width={!fill ? width : undefined}
       height={!fill ? height : undefined}
       className={className}
-      priority={priority}
-      sizes={sizes}
-      unoptimized={true}
+      style={fill ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" } : undefined}
+      loading={priority ? "eager" : "lazy"}
       onError={() => setError(true)}
     />
   );

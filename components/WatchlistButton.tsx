@@ -57,8 +57,9 @@ export default function WatchlistButton({
         }
         setInWatchlist(true);
       }
-    } catch (err: any) {
-      alert(err.message || "操作失败，请重试");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "操作失败，请重试";
+      alert(errorMessage);
     } finally {
       setActionLoading(false);
     }
