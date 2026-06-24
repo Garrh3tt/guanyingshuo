@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Movie } from "@/lib/types";
 import { getPosterUrl } from "@/lib/constants";
 import { getYear } from "@/lib/utils";
 import TomatoScore from "./TomatoScore";
+import SafeImage from "./SafeImage";
 
 interface MovieCardProps {
   movie: Movie;
@@ -15,7 +15,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
       <div className="bg-brand-card rounded-lg overflow-hidden shadow-lg">
         {/* 海报图片 */}
         <div className="relative aspect-[2/3]">
-          <Image
+          <SafeImage
             src={getPosterUrl(movie.poster_path, "poster_medium")}
             alt={movie.title}
             fill

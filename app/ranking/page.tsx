@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { getPopularMovies, getTopRatedMovies, getNowPlayingMovies } from "@/lib/tmdb";
 import { getPosterUrl } from "@/lib/constants";
 import { getYear } from "@/lib/utils";
 import TomatoScore from "@/components/TomatoScore";
+import SafeImage from "@/components/SafeImage";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +89,7 @@ export default async function RankingPage({ searchParams }: RankingPageProps) {
 
             {/* 海报 */}
             <div className="relative shrink-0 w-16 h-24 rounded overflow-hidden">
-              <Image
+              <SafeImage
                 src={getPosterUrl(movie.poster_path, "poster_small")}
                 alt={movie.title}
                 fill

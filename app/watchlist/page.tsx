@@ -2,9 +2,9 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
+import SafeImage from "@/components/SafeImage";
 
 interface WatchlistItem {
   id: string;
@@ -103,7 +103,7 @@ export default function WatchlistPage() {
             <div key={item.id} className="group relative">
               <Link href={`/movie/${item.movieId}`}>
                 <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-brand-card">
-                  <Image
+                  <SafeImage
                     src={
                       item.posterPath
                         ? `https://image.tmdb.org/t/p/w500${item.posterPath}`

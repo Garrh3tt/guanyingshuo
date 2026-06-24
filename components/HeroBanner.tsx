@@ -2,12 +2,12 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
-import Image from "next/image";
 import Link from "next/link";
 import { Movie } from "@/lib/types";
 import { getBackdropUrl } from "@/lib/constants";
 import { truncateText } from "@/lib/utils";
 import TomatoScore from "./TomatoScore";
+import SafeImage from "./SafeImage";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -32,7 +32,7 @@ export default function HeroBanner({ movies }: HeroBannerProps) {
           <SwiperSlide key={movie.id}>
             <div className="relative h-full">
               {/* 背景图 */}
-              <Image
+              <SafeImage
                 src={getBackdropUrl(movie.backdrop_path, "original")}
                 alt={movie.title}
                 fill

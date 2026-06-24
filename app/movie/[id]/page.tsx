@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getMovieDetail,
@@ -19,6 +18,7 @@ import MovieCard from "@/components/MovieCard";
 import ReviewSection from "@/components/ReviewSection";
 import WatchlistButton from "@/components/WatchlistButton";
 import Breadcrumb from "@/components/Breadcrumb";
+import SafeImage from "@/components/SafeImage";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +69,7 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
       {/* 英雄区 */}
       <div className="relative h-[400px] sm:h-[500px] md:h-[600px]">
         {/* 背景图 */}
-        <Image
+        <SafeImage
           src={getBackdropUrl(movie.backdrop_path, "original")}
           alt={movie.title}
           fill
@@ -86,7 +86,7 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
               {/* 海报 */}
               <div className="hidden md:block shrink-0 w-[200px] lg:w-[250px]">
                 <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
-                  <Image
+                  <SafeImage
                     src={getPosterUrl(movie.poster_path, "poster_large")}
                     alt={movie.title}
                     fill
@@ -243,7 +243,7 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
                   className="shrink-0 w-[120px] text-center"
                 >
                   <div className="relative w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-brand-card">
-                    <Image
+                    <SafeImage
                       src={
                         person.profile_path
                           ? `https://image.tmdb.org/t/p/w185${person.profile_path}`

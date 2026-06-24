@@ -39,18 +39,26 @@ export default function WatchlistButton({
     setActionLoading(true);
     try {
       if (inWatchlist) {
-        await fetch(`/api/watchlist?movieId=${movieId}`, { method: "DELETE" });
+        const res = await fetch(`/api/watchlist?movieId=${movieId}`, { method: "DELETE" });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "移除失败");
+        }
         setInWatchlist(false);
       } else {
-        await fetch("/api/watchlist", {
+        const res = await fetch("/api/watchlist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ movieId, title, posterPath }),
         });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "添加失败");
+        }
         setInWatchlist(true);
       }
-    } catch {
-      alert("操作失败，请重试");
+    } catch (err: any) {
+      alert(err.message || "操作失败，请重试");
     } finally {
       setActionLoading(false);
     }
