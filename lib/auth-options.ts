@@ -47,15 +47,20 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateSession }) {
       if (user) {
         token.id = user.id
+      }
+      // 处理 session.update({ name: "xxx" })
+      if (trigger === "update" && updateSession?.name) {
+        token.name = updateSession.name
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
+        session.user.name = token.name as string
       }
       return session
     },

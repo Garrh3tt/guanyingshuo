@@ -128,11 +128,8 @@ export default function ProfilePage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setSuccess("密码修改成功，请重新登录")
         setShowPasswordModal(false)
-        setOldPassword("")
-        setNewPassword("")
-        setConfirmPassword("")
+        signOut({ callbackUrl: "/auth/login" })
       } else {
         setError(data.error || "修改失败")
       }
