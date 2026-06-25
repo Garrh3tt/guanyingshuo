@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^2.4.1",
     "@vercel/edge-config": "^1.4.3",
