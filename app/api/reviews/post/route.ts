@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 import { reviewDB } from "@/lib/reviews";
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
     const { movieId, userName, rating, content } = await req.json();
 
     if (!movieId || !userName || !rating || !content) {
@@ -19,7 +22,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const review = await reviewDB.addReview(Number(movieId), userName, Number(rating), content);
+    const userId = session?.user?.id || "anonymous";
+    const review = await reviewDB.addReview(Number(movieId), userId, userName, Number(rating), content);
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (error) {

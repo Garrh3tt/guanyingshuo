@@ -19,6 +19,8 @@ import ReviewSection from "@/components/ReviewSection";
 import WatchlistButton from "@/components/WatchlistButton";
 import Breadcrumb from "@/components/Breadcrumb";
 import SafeImage from "@/components/SafeImage";
+import RecordView from "@/components/RecordView";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +68,11 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
 
   return (
     <div>
+      <RecordView
+        movieId={movie.id}
+        title={movie.title}
+        posterPath={movie.poster_path}
+      />
       {/* 英雄区 */}
       <div className="relative h-[400px] sm:h-[500px] md:h-[600px]">
         {/* 背景图 */}
@@ -78,6 +85,19 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
         />
         <div className="absolute inset-0 bg-gradient-to-r from-brand-darker via-brand-darker/80 to-brand-darker/40" />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-darker via-transparent to-transparent" />
+
+        {/* 返回按钮 */}
+        <div className="absolute top-4 left-4 z-10">
+          <Link
+            href="/movie"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors text-sm backdrop-blur-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            返回
+          </Link>
+        </div>
 
         {/* 内容 */}
         <div className="absolute inset-0 flex items-end pb-10">

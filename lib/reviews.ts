@@ -3,6 +3,7 @@ import { readData, writeData } from "@/lib/storage";
 export interface Review {
   id: string;
   movieId: number;
+  userId: string;
   userName: string;
   rating: number;
   content: string;
@@ -34,8 +35,19 @@ export const reviewDB = {
       );
   },
 
+  async getUserReviews(userId: string): Promise<Review[]> {
+    const reviews = await readReviews();
+    return reviews
+      .filter((r) => r.userId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  },
+
   async addReview(
     movieId: number,
+    userId: string,
     userName: string,
     rating: number,
     content: string
@@ -44,6 +56,7 @@ export const reviewDB = {
     const newReview: Review = {
       id: generateId(),
       movieId,
+      userId,
       userName,
       rating,
       content,
