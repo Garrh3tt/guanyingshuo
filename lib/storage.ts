@@ -7,6 +7,19 @@ const CACHE_TTL = 5000; // 5秒缓存
 // 存储 put() 返回的 blob URL，用于后续直接 fetch 读取最新数据
 const blobUrlCache: Record<string, string> = {};
 
+// globalThis 全局存储作为 fallback（同一 Vercel 实例内持久）
+interface GlobalStore {
+  _storage?: Record<string, unknown>;
+}
+declare const globalThis: GlobalStore;
+
+function getGlobalStore(): Record<string, unknown> {
+  if (!globalThis._storage) {
+    globalThis._storage = {};
+  }
+  return globalThis._storage;
+}
+
 function isBlobAvailable(): boolean {
   return !!process.env.BLOB_READ_WRITE_TOKEN || !!process.env.VERCEL_OIDC_TOKEN;
 }
@@ -51,6 +64,7 @@ export async function readData<T>(key: string): Promise<T | null> {
           const text = await resp.text();
           const data = JSON.parse(text);
           memoryCache[key] = { data, timestamp: Date.now() };
+          getGlobalStore()[key] = data;
           return data as T;
         }
       }
@@ -65,6 +79,7 @@ export async function readData<T>(key: string): Promise<T | null> {
           const text = await resp.text();
           const data = JSON.parse(text);
           memoryCache[key] = { data, timestamp: Date.now() };
+          getGlobalStore()[key] = data;
           return data as T;
         }
       }
@@ -75,6 +90,7 @@ export async function readData<T>(key: string): Promise<T | null> {
         const text = await streamToText(blob.stream);
         const data = JSON.parse(text);
         memoryCache[key] = { data, timestamp: Date.now() };
+        getGlobalStore()[key] = data;
         return data as T;
       }
     } catch (e) {
@@ -82,14 +98,23 @@ export async function readData<T>(key: string): Promise<T | null> {
     }
   }
 
+  // 3. 从 globalThis 全局存储读取（Blob 不可用时的 fallback）
+  const globalStore = getGlobalStore();
+  if (key in globalStore) {
+    const data = globalStore[key] as T;
+    memoryCache[key] = { data, timestamp: Date.now() };
+    return data;
+  }
+
   return null;
 }
 
 export async function writeData(key: string, data: unknown): Promise<void> {
-  // 1. 更新内存缓存
+  // 1. 更新内存缓存和全局存储
   memoryCache[key] = { data, timestamp: Date.now() };
+  getGlobalStore()[key] = data;
 
-  // 2. 写入 Vercel Blob（禁用缓存，确保立即可读）
+  // 2. 尝试写入 Vercel Blob（禁用缓存，确保立即可读）
   if (isBlobAvailable()) {
     try {
       const jsonString = JSON.stringify(data);
@@ -108,25 +133,18 @@ export async function writeData(key: string, data: unknown): Promise<void> {
     }
   }
 
-  // 如果没有可用的存储后端，抛出错误
-  throw new Error(
-    "No storage backend available. Please set BLOB_READ_WRITE_TOKEN environment variable."
-  );
+  // 如果 Blob 不可用或写入失败，使用 globalThis 存储（至少同一实例内持久）
+  console.warn(`Using globalThis fallback storage for ${key}`);
 }
 
 export async function deleteData(key: string): Promise<void> {
   delete memoryCache[key];
   delete blobUrlCache[key];
+  delete getGlobalStore()[key];
 
   if (isBlobAvailable()) {
     try {
-      // del 可以接受 pathname 或 url
-      const url = blobUrlCache[key];
-      if (url) {
-        await del(url);
-      } else {
-        await del(key);
-      }
+      await del(key);
     } catch (e) {
       console.warn(`Blob delete failed for ${key}:`, e);
     }
@@ -135,13 +153,23 @@ export async function deleteData(key: string): Promise<void> {
 
 // 列出所有存储的键（用于调试）
 export async function listKeys(): Promise<string[]> {
+  const keys = new Set<string>();
+
+  // 从内存缓存
+  Object.keys(memoryCache).forEach((k) => keys.add(k));
+
+  // 从全局存储
+  Object.keys(getGlobalStore()).forEach((k) => keys.add(k));
+
+  // 从 Blob
   if (isBlobAvailable()) {
     try {
       const { blobs } = await list();
-      return blobs.map((b) => b.pathname);
+      blobs.forEach((b) => keys.add(b.pathname));
     } catch (e) {
       console.warn("Blob list failed:", e);
     }
   }
-  return Object.keys(memoryCache);
+
+  return Array.from(keys);
 }

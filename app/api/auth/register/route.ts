@@ -35,8 +35,9 @@ export async function POST(req: Request) {
     )
   } catch (error) {
     console.error("注册错误:", error)
+    const errorMessage = error instanceof Error ? error.message : "注册失败，请稍后重试"
     return NextResponse.json(
-      { error: "注册失败，请稍后重试" },
+      { error: errorMessage },
       { status: 500 }
     )
   }
