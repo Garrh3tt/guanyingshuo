@@ -16,7 +16,14 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await db.findUserByEmail(credentials.email as string)
+        // 尝试查找用户，如果找不到则等待后重试（应对 Blob 缓存延迟）
+        let user = await db.findUserByEmail(credentials.email as string)
+
+        if (!user) {
+          // 等待 2 秒后重试（Blob 缓存最多 5 分钟，但通常几秒内生效）
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+          user = await db.findUserByEmail(credentials.email as string)
+        }
 
         if (!user) {
           return null

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,8 +42,20 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.error || "注册失败")
       } else {
-        // 注册成功，跳转到登录页
-        router.push("/auth/login?registered=true")
+        // 注册成功后自动登录（避免 Blob 缓存导致登录时找不到用户）
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        })
+
+        if (result?.error) {
+          // 自动登录失败，跳转到登录页手动登录
+          router.push("/auth/login?registered=true")
+        } else {
+          router.push("/")
+          router.refresh()
+        }
       }
     } catch {
       setError("注册失败，请稍后重试")
