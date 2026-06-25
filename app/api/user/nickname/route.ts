@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { db } from "@/lib/db";
 import { readData, writeData } from "@/lib/storage";
 
 interface User {
